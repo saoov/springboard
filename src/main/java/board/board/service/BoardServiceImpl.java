@@ -3,8 +3,11 @@ package board.board.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,26 +25,26 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
 
+    private final EntityManager entityManager;
+
     // 게시글 리스트
-    public List<Board> findAll(Integer pageNum) {
-        Page<Board> page = boardRepository
-                .findAll(PageRequest.of(pageNum - 1, 4, Sort.by(Sort.Direction.ASC, "createdDate")));
-        List<Board> boardEntities = page.getContent();
+    public Page<Board> findAll(Pageable pageable) {
+        int pageNum = (pageable.getPageNumber() == 0) ? 0 : (pageable.getPageNumber() - 1);
+        return boardRepository.findAll(PageRequest.of(pageNum, 5, Sort.by(Sort.Direction.ASC, "createdDate")));
+        // List<Board> boardEntities = page.getContent();
+        // List<Board> list = new ArrayList<>();
 
-        List<Board> list = new ArrayList<>();
-
-        for (Board boardEntity : boardEntities) {
-            list.add(boardEntity);
-        }
+        // for (Board boardEntity : boardEntities) {
+        // list.add(boardEntity);
+        // }
         // boardRepository.findAll().forEach(e -> list.add(e));
-        return list;
     }
 
     // 게시글 저장
-    public BoardDto save(BoardDto boardDto) {
+    public Long save(BoardDto boardDto) {
         Board board = boardDto.toEntity();
-        boardRepository.save(board);
-        return boardDto;
+        entityManager.persist(board);
+        return boardDto.getId();
     }
 
     // id를 이용해 Board에 대한 정보 가져옴
@@ -64,16 +67,16 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<Board> searchTitle(String keyword) {
-        List<Board> boards = boardRepository.findByTitleContainingIgnoreCase(keyword);
-        // List<BoardDto> boardDtoList = new ArrayList<>();
-        // if (boards.isEmpty())
-        // return boardDtoList;
+    public List<BoardDto> searchTitle(String keyword) {
+        List<Board> boardList = boardRepository.findByTitleContainingIgnoreCase(keyword);
+        List<BoardDto> boardDtoList = new ArrayList<>();
+        if (boardList.isEmpty())
+            return boardDtoList;
 
-        // for (Board board : boards) {
-        // boardDtoList.add(this.convertEntityToDto(board));
-        // }
-        return boards;
+        for (Board board : boardList) {
+            boardDtoList.add(this.toDto(board));
+        }
+        return boardDtoList;
     }
 
     @Override
@@ -104,9 +107,11 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
-    private BoardDto convertEntityToDto(Board board) {
+    private BoardDto toDto(Board board) {
         return BoardDto.builder().id(board.getId()).writer(board.getWriter()).title(board.getTitle())
-                .content(board.getContent()).fileId(board.getFileId()).createdDate(board.getCreatedDate()).build();
+                .content(board.getContent()).fileId(board.getFileId()).createdDate(board.getCreatedDate())
+                .delYn(board.getDelYn()).useYn(board.getUserYn()).build();
+
     }
 
 }

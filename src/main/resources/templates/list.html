@@ -20,20 +20,31 @@
             </tr>
         </thead>
         <tbody>
-                <tr th:each = "board : ${list}" th:if = "${board.delYn} == 'N'">
-                    <td th:text=${board.id}></td>
+                <tr th:each = "boardDto : ${list}" th:if = "${boardDto.delYn} == 'N'">
+                    <td th:text=${boardDto.id}></td>
                     <td>
-                        <a th:href="@{'/read?id='+ ${board.id}}">
-                        <span th:text="${board.title}"></span>
+                        <a th:href="@{'/read?id='+ ${boardDto.id}}">
+                        <span th:text="${boardDto.title}"></span>
                         </a>
                     </td>
-                    <td th:text="${board.writer}"></td>
-                    <td th:text="${board.content}"></td>
-                    <td th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd')}"></td>
+                    <td th:text="${boardDto.writer}"></td>
+                    <td th:text="${boardDto.content}"></td>
+                    <td th:text="${#temporals.format(boardDto.createdDate, 'yyyy-MM-dd')}"></td>
                 </tr>
         </tbody>
     </table>
-
+    <!--pagination-->
+    <div class="pagination" th:with="start=${(list.number/5)*5 + 1}, end=(${(list.totalPages == 0) ? 1 : (start + (5 - 1) < list.totalPages ? start + (5-1) : list.totalPages)})">
+        <ul>
+            <li th:if="${start > 1 }">
+                <a th:href="@{/list?(page=0)}" th:text="'<<'"></a>
+            </li>
+            <li th:each="page: ${#numbers.sequence(start, end)}">
+                <a th:href="@{/list?(page=${page-1})}" th:text="${page}"></a>
+            </li>
+        </ul>
+    </div>
+    <!--search-->
     <form action="/search" method="get">
         <div class="search">
             <input type="text" name="keyword" placeholder="검색어를 입력하세요">

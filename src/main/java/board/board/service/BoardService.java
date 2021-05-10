@@ -2,6 +2,9 @@ package board.board.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import board.board.domain.Board;
 import board.board.model.BoardDto;
 
@@ -15,7 +18,7 @@ public interface BoardService {
      * 
      * @return List
      */
-    public List<Board> findAll(Integer pageNum);
+    public Page<Board> findAll(Pageable pageable);
 
     /**
      * 1개의 게시글 저장
@@ -23,7 +26,7 @@ public interface BoardService {
      * @param board
      * @return Board
      */
-    public BoardDto save(BoardDto boardDto);
+    public Long save(BoardDto boardDto);
 
     /**
      * Board Entity의 id 값으로 1개의 게시글을 Dto를 통해 가져옴
@@ -46,7 +49,7 @@ public interface BoardService {
      * @param keyword
      * @return
      */
-    public List<Board> searchTitle(String keyword);
+    public List<BoardDto> searchTitle(String keyword);
 
     public Long getBoardCount();
 

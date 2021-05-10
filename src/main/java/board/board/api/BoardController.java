@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -74,14 +76,15 @@ public class BoardController {
 
     // 게시글 list 요청
     @GetMapping("/list")
-    public void getList(Model model, @RequestParam(value = "page", defaultValue = "1") Integer pageNum) {
-        List<Board> list = boardService.findAll(pageNum);
-        Integer[] pageList = boardService.getPageList(pageNum);
+    public void getList(Model model, Pageable pageable) {
+        Page<Board> list = boardService.findAll(pageable);
+        // Integer[] pageList = boardService.getPageList(pageNum);
 
         // boardService.findAll().forEach(e -> list.add(e));
-
+        System.out.println("총ele : " + list.getTotalElements() + "전체 페이지 : " + list.getTotalPages() + "페이지에 표시할 ele수 : "
+                + list.getSize() + "현재페이지 : " + list.getNumber());
         model.addAttribute("list", list);
-        model.addAttribute("pageList", pageList);
+        // model.addAttribute("pageList", pageList);
     }
 
     // read, update 페이지 정보 요청
@@ -108,7 +111,7 @@ public class BoardController {
     // search 요청
     @GetMapping("/search")
     public String search(@RequestParam(value = "keyword") String keyword, Model model) {
-        List<Board> searchList = boardService.searchTitle(keyword);
+        List<BoardDto> searchList = boardService.searchTitle(keyword);
         model.addAttribute("list", searchList);
         return "list";
     }
